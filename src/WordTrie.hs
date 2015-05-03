@@ -13,20 +13,20 @@ import System.IO (hGetLine, hIsEOF, openFile, IOMode(ReadMode), stdin)
 
 
 type Wordbook = TrieSet Map Char
-readIntoTrie :: Handle -> Int -> Wordbook -> IO Wordbook
-readIntoTrie handle linenum t = do eof <- hIsEOF handle
-                                   if eof then return t
-                                   else do line <- hGetLine handle
-                                           (readIntoTrie handle $! linenum + 1) $! insert line t
+readIntoTrie :: Handle -> Wordbook -> IO Wordbook
+readIntoTrie handle t = do eof <- hIsEOF handle
+                           if eof then return t
+                           else do line <- hGetLine handle
+                                   (readIntoTrie handle) $! insert line t
 
 readTrieFromStdin :: IO (Wordbook)
-readTrieFromStdin = do readIntoTrie stdin 0 empty >>= return
+readTrieFromStdin = do readIntoTrie stdin empty >>= return
 
 
 readTrieFromFile :: String -> IO (Wordbook)
 readTrieFromFile path = do
   handle <- openFile path ReadMode
-  t <- readIntoTrie handle 0 empty
+  t <- readIntoTrie handle empty
   return t
 
 
