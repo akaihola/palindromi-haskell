@@ -5,8 +5,8 @@ import WordTrie (getLongerMatches,
                  readTrieFromFile,
                  readTrieFromStdin,
                  Wordbook)
-import Data.ListTrie.Patricia.Set (empty, insert, lookupPrefix, toList, TrieSet)
-import qualified Data.ListTrie.Patricia.Set as S (filter, map)
+import Data.ListTrie.Patricia.Set (toList)
+import qualified Data.ListTrie.Patricia.Set as S (map)
 import Data.List (intercalate)
 import qualified Data.Set as Set (empty, insert, map, member, Set)
 
