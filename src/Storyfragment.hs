@@ -1,3 +1,5 @@
+module Storyfragment where
+
 import Data.Char
 
 isNotAlpha = not . isAlpha
@@ -31,6 +33,14 @@ Tail xs +++ (Fragment ys y :-> z) | hasAlpha xs = nonPunctuationError xs
                                   | isNotAlpha y = nonLetterError y
                                   | otherwise = (Fragment (xs ++ ys) y) :-> z
 (x :-> y) +++ z = x :-> (y +++ z)
+
+reverseStory l = rev l (Tail "")
+  where
+    rev (Fragment xs x :-> ys) (Tail "") = rev (Fragment "" x :-> ys) (Tail (reverse xs))
+    rev (Fragment xs x :-> ys) (Fragment "" a :-> b) = rev (Fragment "" x :-> ys) (Fragment (reverse xs) a :-> b)
+    rev (x :-> ys) a = rev ys (x :-> a)
+    rev (Tail xs) (Fragment "" a :-> b) = rev (Tail "") (Fragment (reverse xs) a :-> b)
+    rev (Tail "") a = a
 
 toString :: Story -> String
 toString (Tail xs) = xs
