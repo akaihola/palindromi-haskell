@@ -38,21 +38,24 @@ findPalindromes :: Int -> String -> MirrorDictionaries -> Set.Set String -> [Pal
 findPalindromes 0 _ _ _ = []
 findPalindromes n prefix dictionaries usedWords
     = final ++ longer ++ shorter
-    where final :: [Palindrome]
-          final | isPalindrome prefix = [[]]
-                | otherwise = []
-          (MirrorDictionaries dictionary _) = dictionaries
-          longerMatches = getLongerMatches prefix dictionary
-          shorterMatches = getShorterMatches prefix dictionary
-          longer = [(match:rest)
-                   | (match, overflow) <- longerMatches,
-                     not (Set.member match usedWords),
-                     restBackwards <- findPalindromes (n - 1) overflow (swap dictionaries) (Set.map reverse (Set.insert match usedWords)),
-                     let rest = reverse $ map reverse restBackwards]
-          shorter = [(match:rest)
-                    | (match, underflow) <- shorterMatches,
-                      not (Set.member match usedWords),
-                      rest <- findPalindromes (n - 1) underflow dictionaries (Set.insert match usedWords)]
+    where
+      final :: [Palindrome]
+      final | isPalindrome prefix = [[]]
+            | otherwise = []
+      (MirrorDictionaries dictionary _) = dictionaries
+      longerMatches = getLongerMatches prefix dictionary
+      shorterMatches = getShorterMatches prefix dictionary
+      longer = [(match:rest)
+               | (match, overflow) <- longerMatches
+               , not (Set.member match usedWords)
+               , restBackwards <- loop overflow (swap dictionaries) (Set.map reverse (Set.insert match usedWords))
+               , let rest = reverse2d restBackwards]
+      shorter = [(match:rest)
+                | (match, underflow) <- shorterMatches
+                , not (Set.member match usedWords)
+                , rest <- loop underflow dictionaries (Set.insert match usedWords)]
+      reverse2d = reverse . map reverse
+      loop = findPalindromes (n - 1)
 
 
 main :: IO ()

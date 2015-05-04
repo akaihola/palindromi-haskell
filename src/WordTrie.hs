@@ -6,7 +6,8 @@ module WordTrie (getLongerMatches,
 
 import Prelude hiding (filter)
 import Data.List (isPrefixOf)
-import Data.ListTrie.Patricia.Set (empty, filter, insert, lookupPrefix, toList, TrieSet)
+import Data.ListTrie.Patricia.Set (empty, filter, insert, lookupPrefix,
+                                   toList, TrieSet)
 import Data.Map (Map)
 import GHC.IO.Handle.Types (Handle)
 import System.IO (hGetLine, hIsEOF, openFile, IOMode(ReadMode), stdin)
@@ -14,20 +15,22 @@ import System.IO (hGetLine, hIsEOF, openFile, IOMode(ReadMode), stdin)
 
 type Wordbook = TrieSet Map Char
 readIntoTrie :: Handle -> Wordbook -> IO Wordbook
-readIntoTrie handle t = do eof <- hIsEOF handle
-                           if eof then return t
-                           else do line <- hGetLine handle
-                                   (readIntoTrie handle) $! insert line t
+readIntoTrie handle t =
+  do
+    eof <- hIsEOF handle
+    if eof
+      then return t
+      else do line <- hGetLine handle
+              (readIntoTrie handle) $! insert line t
 
 readTrieFromStdin :: IO (Wordbook)
-readTrieFromStdin = do readIntoTrie stdin empty >>= return
+readTrieFromStdin = readIntoTrie stdin empty
 
 
 readTrieFromFile :: String -> IO (Wordbook)
 readTrieFromFile path = do
   handle <- openFile path ReadMode
-  t <- readIntoTrie handle empty
-  return t
+  readIntoTrie handle empty
 
 
 type Match = (String, String)
@@ -36,13 +39,15 @@ lookupIsPrefixTo :: String -> Wordbook -> Wordbook
 lookupIsPrefixTo word = filter ((flip isPrefixOf) word)
 
 getLongerMatches :: String -> Wordbook -> [Match]
-getLongerMatches prefix dictionary = [(match, drop (length prefix) match)
-                                     | match <- toList (lookupPrefix prefix dictionary),
-                                                match /= prefix]
+getLongerMatches prefix dictionary =
+  [(match, drop (length prefix) match)
+  | match <- toList (lookupPrefix prefix dictionary)
+  , match /= prefix]
 
 getShorterMatches :: String -> Wordbook -> [Match]
-getShorterMatches prefix dictionary = [(match, drop (length match) prefix)
-                                      | match <- toList (lookupIsPrefixTo prefix dictionary)]
+getShorterMatches prefix dictionary =
+  [(match, drop (length match) prefix)
+  | match <- toList (lookupIsPrefixTo prefix dictionary)]
 
 
 
