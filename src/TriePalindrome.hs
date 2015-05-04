@@ -30,31 +30,37 @@ isPalindrome bs = reverse bs == bs
 
 type Palindrome = [String]
 
+emptyPalindrome :: Palindrome
+emptyPalindrome = []
+
 -- Filter out palindromes whose first word has already been used in the rest of the palindrome
 filterUsed :: [[String]] -> [[String]]
 filterUsed = filter (\(x:xs) -> not (elem x xs))
 
+reverse2d :: [String] -> [String]
+reverse2d = reverse . map reverse
+
 findPalindromes :: Int -> String -> MirrorDictionaries -> Set.Set String -> [Palindrome]
-findPalindromes 0 _ _ _ = []
+findPalindromes (-1) _ _ _ = []
 findPalindromes n prefix dictionaries usedWords
     = final ++ longer ++ shorter
     where
       final :: [Palindrome]
-      final | isPalindrome prefix = [[]]
+      final | isPalindrome prefix = [emptyPalindrome]
             | otherwise = []
       (MirrorDictionaries dictionary _) = dictionaries
       longerMatches = getLongerMatches prefix dictionary
       shorterMatches = getShorterMatches prefix dictionary
       longer = [(match:rest)
                | (match, overflow) <- longerMatches
-               , not (Set.member match usedWords)
+               , unused match
                , restBackwards <- loop overflow (swap dictionaries) (Set.map reverse (Set.insert match usedWords))
                , let rest = reverse2d restBackwards]
       shorter = [(match:rest)
                 | (match, underflow) <- shorterMatches
-                , not (Set.member match usedWords)
+                , unused match
                 , rest <- loop underflow dictionaries (Set.insert match usedWords)]
-      reverse2d = reverse . map reverse
+      unused word = not (Set.member word usedWords)
       loop = findPalindromes (n - 1)
 
 
@@ -63,7 +69,7 @@ main = do
     [maxLength] <- getArgs
     wordsL <- readTrieFromStdin
     let dictionaries = mirrorDictionaries wordsL
-    let palindromes = findPalindromes (1 + (read maxLength :: Int)) "" dictionaries Set.empty
+    let palindromes = findPalindromes (read maxLength) "" dictionaries Set.empty
     -- mapM_ putStrLn (toList wordsL)
     -- putStrLn (show wordsL)
     mapM_ (putStrLn . (intercalate " ")) palindromes
